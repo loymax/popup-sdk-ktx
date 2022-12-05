@@ -57,7 +57,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun getConfirmModel() : ConfirmRequest {
-        val confirmRequest = ConfirmRequest()
+        val confirmRequest = ConfirmRequest(123,"123",123)
         return confirmRequest
     }
 }
