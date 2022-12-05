@@ -10,7 +10,6 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.lifecycle.Observer
 import com.example.popupsdksample.R
-import loymax.popup.sdk.services.PopUpService
 
 open class MainFragment : Fragment() {
     companion object {

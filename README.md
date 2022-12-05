@@ -24,7 +24,7 @@ Class | Method | HTTP request | Description
 * add libs to build.gradle
   ```kotlin
   implementation "com.squareup.retrofit2:retrofit:2.9.0"
-  implementation 'com.github.semdelion:loymax.popup.sdk:1.0.1'
+  implementation 'com.github.loymax:popup-sdk-ktx:1.0.0'
  
 * set base url
   ```kotlin
