@@ -8,7 +8,7 @@
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *PopupApi* | [**confirm**](docs/PopupApi.md#confirm) | **POST** popup/confirm | Confirm action popup
-*PopupApi* | [**popupClientIdGet**](docs/PopupApi.md#popupclientidget) | **GET** popup/{clientId} | Find popup by client_id
+*PopupApi* | [**popup**](docs/PopupApi.md#popup) | **POST** popup/ | Find popup by client_id
 
 ## How to use
 * add settings.gradle
@@ -24,19 +24,19 @@ Class | Method | HTTP request | Description
 * add libs to build.gradle
   ```kotlin
   implementation "com.squareup.retrofit2:retrofit:2.9.0"
-  implementation 'com.github.loymax:popup-sdk-ktx:1.0.0'
+  implementation 'com.github.loymax:popup-sdk-ktx:1.0.5'
  
 * set base url
   ```kotlin
-  private var _popUpService: PopUpService = PopUpService(_baseUrl)
+  private var _popUpService: PopUpService = PopUpService(_baseUrl, httpClient)
   
 p.s
 You can also add httpclient.builder to PopUpService with baseUrl
 
 * getPopUp and viewPopUp
   ```kotlin
-  val result = _popUpService.getPopUp(clientId, action)
-  val result = _popUpService.viewPopUp(ConfirmModel)
+  val result = _popUpService.popUp(clientId, action, reference)
+  val result = _popUpService.popupConfirm(ConfirmRequest())
   
 For more information, you can view our project PopUpSDKSample
     

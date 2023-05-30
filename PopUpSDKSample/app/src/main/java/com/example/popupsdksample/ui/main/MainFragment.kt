@@ -40,7 +40,7 @@ open class MainFragment : Fragment() {
 
         view.findViewById<Button>(R.id.pop_up_button).apply {
             this.setOnClickListener {
-                viewModel.getPopUp("123", "12")
+                viewModel.getPopUp(	"10452636", "app_open","")
             }
         }
 
@@ -50,7 +50,7 @@ open class MainFragment : Fragment() {
         })
         view.findViewById<Button>(R.id.confirm_button).apply {
             this.setOnClickListener {
-                viewModel.viewPopUp()
+                viewModel.popUpConfirm()
             }
         }
     }
