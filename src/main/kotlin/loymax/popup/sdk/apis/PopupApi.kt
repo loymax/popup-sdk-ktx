@@ -20,7 +20,7 @@ interface PopupApi {
      * @return [Call]<[Unit]>
      */
     @POST("popup/confirm")
-    fun confirm(@Body confirmRequest: ConfirmRequest? = null): Call<Unit>
+    fun popupConfirm(@Body confirmRequest: ConfirmRequest? = null): Call<Unit>
 
     /**
      * Find popup by client_id
@@ -30,9 +30,9 @@ interface PopupApi {
      *  - 400: Invalid ID supplied
      *
      * @param popupRequest  (optional)
-     * @return [Call]<[PopupResponse]>
+     * @return [Call]<List<[PopupResponse]>>
      */
     @POST("popup/")
-    fun popupPost(@Body popupRequest: PopupRequest? = null): Call<PopupResponse>
+    fun popup(@Body popupRequest: PopupRequest? = null): Call<List<PopupResponse>>
 
 }

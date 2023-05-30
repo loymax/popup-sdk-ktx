@@ -31,19 +31,19 @@ open class PopUpService(_baseUrl: String): IPopUpService {
         popupApi = loymaxClient.createService(PopupApi::class.java)
     }
 
-    override fun popUp(clientId: String?, action: String?, reference: String?): retrofit2.Response<PopupResponse> {
+    override fun popup(clientId: String?, action: String?, reference: String?): retrofit2.Response<List<PopupResponse>> {
         if(!::loymaxClient.isInitialized) {
             initialization()
         }
 
 
-        return popupApi.popupPost(PopupRequest(clientId,action,reference)).execute()
+        return popupApi.popup(PopupRequest(clientId,action,reference)).execute()
     }
 
-    override fun viewPopUp(confirmRequest: ConfirmRequest): retrofit2.Response<Unit> {
+    override fun popupConfirm(confirmRequest: ConfirmRequest): retrofit2.Response<Unit> {
         if(!::loymaxClient.isInitialized) {
             initialization()
         }
-        return popupApi.confirm(confirmRequest).execute()
+        return popupApi.popupConfirm(confirmRequest).execute()
     }
 }
