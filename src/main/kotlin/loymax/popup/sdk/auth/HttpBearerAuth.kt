@@ -35,5 +35,4 @@ class HttpBearerAuth(
     private fun upperCaseBearer(): String {
         return if (schema.lowercase().equals("bearer")) "Bearer" else schema
     }
-
 }

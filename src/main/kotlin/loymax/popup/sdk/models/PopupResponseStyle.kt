@@ -15,7 +15,6 @@
 
 package loymax.popup.sdk.models
 
-
 import com.squareup.moshi.Json
 
 /**
@@ -25,13 +24,13 @@ import com.squareup.moshi.Json
  * @param secondColor 
  */
 
-data class PopupStyle (
+data class PopupResponseStyle (
 
     @Json(name = "main_color")
-    var mainColor: kotlin.String? = null,
+    val mainColor: kotlin.String? = null,
 
     @Json(name = "second_color")
-    var secondColor: kotlin.String? = null
+    val secondColor: kotlin.String? = null
 
 )
 

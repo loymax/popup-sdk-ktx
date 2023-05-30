@@ -3,10 +3,9 @@ package loymax.popup.sdk.services
 import loymax.popup.sdk.apis.PopupApi
 import loymax.popup.sdk.infrastructure.ApiClient
 import loymax.popup.sdk.models.ConfirmRequest
-import loymax.popup.sdk.models.Popup
+import loymax.popup.sdk.models.PopupRequest
+import loymax.popup.sdk.models.PopupResponse
 import okhttp3.OkHttpClient
-import okhttp3.Response
-import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 
 open class PopUpService(_baseUrl: String): IPopUpService {
@@ -18,6 +17,7 @@ open class PopUpService(_baseUrl: String): IPopUpService {
     constructor(_baseUrl: String, _httpClient: OkHttpClient.Builder? ) : this(_baseUrl) {
         httpClient = _httpClient
     }
+
     override fun initialization() {
         if (httpClient == null) {
             httpClient = OkHttpClient()
@@ -31,11 +31,13 @@ open class PopUpService(_baseUrl: String): IPopUpService {
         popupApi = loymaxClient.createService(PopupApi::class.java)
     }
 
-    override fun getPopUp(clientId: String, action: String): retrofit2.Response<Popup> {
+    override fun popUp(clientId: String?, action: String?, reference: String?): retrofit2.Response<PopupResponse> {
         if(!::loymaxClient.isInitialized) {
             initialization()
         }
-        return popupApi.popupClientIdGet(clientId, action).execute()
+
+
+        return popupApi.popupPost(PopupRequest(clientId,action,reference)).execute()
     }
 
     override fun viewPopUp(confirmRequest: ConfirmRequest): retrofit2.Response<Unit> {

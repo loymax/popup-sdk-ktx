@@ -15,19 +15,26 @@
 
 package loymax.popup.sdk.models
 
-
 import com.squareup.moshi.Json
 
 /**
  * 
  *
- * @param name 
+ * @param clientId 
+ * @param action 
+ * @param reference 
  */
 
-data class PopupContentButton (
+data class PopupRequest (
 
-    @Json(name = "name")
-    var name: kotlin.String? = null
+    @Json(name = "client_id")
+    val clientId: kotlin.String? = null,
+
+    @Json(name = "action")
+    val action: kotlin.String? = null,
+
+    @Json(name = "reference")
+    val reference: kotlin.String? = null
 
 )
 

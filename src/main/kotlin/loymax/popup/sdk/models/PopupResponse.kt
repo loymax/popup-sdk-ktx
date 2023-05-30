@@ -22,12 +22,12 @@ import com.squareup.moshi.Json
  *
  * @param popupId 
  * @param navlink 
- * @param action 
+ * @param reference 
  * @param content 
  * @param style 
  */
 
-data class Popup (
+data class PopupResponse (
 
     @Json(name = "popup_id")
     val popupId: kotlin.Long,
@@ -35,11 +35,11 @@ data class Popup (
     @Json(name = "navlink")
     val navlink: kotlin.String,
 
-    @Json(name = "action")
-    val action: kotlin.String? = null,
+    @Json(name = "reference")
+    val reference: kotlin.String? = null,
 
     @Json(name = "content")
-    val content: PopupContent? = null,
+    val content: PopupResponseContent? = null,
 
     @Json(name = "style")
     val style: PopupResponseStyle? = null

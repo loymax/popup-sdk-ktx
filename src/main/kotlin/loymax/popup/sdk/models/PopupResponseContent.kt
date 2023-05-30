@@ -25,9 +25,10 @@ import com.squareup.moshi.Json
  * @param imageUrl 
  * @param text 
  * @param button 
+ * @param promocode 
  */
 
-data class PopupContent (
+data class PopupResponseContent (
 
     @Json(name = "title")
     val title: kotlin.String? = null,
@@ -42,6 +43,10 @@ data class PopupContent (
     val text: kotlin.String? = null,
 
     @Json(name = "button")
-    val button: PopupResponseContentButton? = null
+    val button: PopupResponseContentButton? = null,
+
+    @Json(name = "promocode")
+    val promocode: kotlin.String? = null
+
 )
 
