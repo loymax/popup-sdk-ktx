@@ -15,7 +15,6 @@
 
 package loymax.popup.sdk.models
 
-
 import com.squareup.moshi.Json
 
 /**
@@ -29,13 +28,13 @@ import com.squareup.moshi.Json
 data class ConfirmRequest (
 
     @Json(name = "popup_id")
-    var popupId: kotlin.Int? = null,
+    val popupId: kotlin.Int? = null,
 
     @Json(name = "client_id")
-    var clientId: kotlin.String? = null,
+    val clientId: kotlin.String? = null,
 
     @Json(name = "source_id")
-    var sourceId: kotlin.Int? = null
+    val sourceId: kotlin.Int? = null
 
 )
 

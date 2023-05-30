@@ -3,8 +3,9 @@ package loymax.popup.sdk.apis
 import loymax.popup.sdk.infrastructure.CollectionFormats.*
 import retrofit2.http.*
 import retrofit2.Call
-import okhttp3.RequestBody
-import com.squareup.moshi.Json
+import loymax.popup.sdk.models.ConfirmRequest
+import loymax.popup.sdk.models.PopupResponse
+import loymax.popup.sdk.models.PopupRequest
 
 import loymax.popup.sdk.models.*
 
@@ -19,7 +20,7 @@ interface PopupApi {
      * @return [Call]<[Unit]>
      */
     @POST("popup/confirm")
-    fun confirm(@Body confirmRequest: ConfirmRequest? = null): Call<Unit>
+    fun popupConfirm(@Body confirmRequest: ConfirmRequest? = null): Call<Unit>
 
     /**
      * Find popup by client_id
@@ -28,11 +29,10 @@ interface PopupApi {
      *  - 200: successful operation
      *  - 400: Invalid ID supplied
      *
-     * @param clientId Client ID in the Loyalty Program
-     * @param action Target action ID
-     * @return [Call]<[Popup]>
+     * @param popupRequest  (optional)
+     * @return [Call]<List<[PopupResponse]>>
      */
-    @GET("popup/{clientId}")
-    fun popupClientIdGet(@Path("clientId") clientId: kotlin.String, @Query("action") action: kotlin.Any): Call<Popup>
+    @POST("popup/")
+    fun popup(@Body popupRequest: PopupRequest? = null): Call<List<PopupResponse>>
 
 }
