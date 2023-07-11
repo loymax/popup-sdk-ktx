@@ -3,6 +3,7 @@ package loymax.popup.sdk.services
 import loymax.popup.sdk.apis.PopupApi
 import loymax.popup.sdk.infrastructure.ApiClient
 import loymax.popup.sdk.models.ConfirmRequest
+import loymax.popup.sdk.models.EventRequest
 import loymax.popup.sdk.models.PopupRequest
 import loymax.popup.sdk.models.PopupResponse
 import okhttp3.OkHttpClient
@@ -45,5 +46,12 @@ open class PopUpService(_baseUrl: String): IPopUpService {
             initialization()
         }
         return popupApi.popupConfirm(confirmRequest).execute()
+    }
+
+    override fun event(eventRequest: EventRequest): retrofit2.Response<Unit> {
+        if(!::loymaxClient.isInitialized) {
+            initialization()
+        }
+        return popupApi.event(eventRequest).execute()
     }
 }

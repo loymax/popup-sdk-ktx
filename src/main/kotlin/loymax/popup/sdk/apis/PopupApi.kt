@@ -35,4 +35,15 @@ interface PopupApi {
     @POST("popup/")
     fun popup(@Body popupRequest: PopupRequest? = null): Call<List<PopupResponse>>
 
+    /**
+     * Post a web event
+     * Method to post a web event data
+     * Responses:
+     *  - 200: Web event has been successfully put into queue
+     *
+     * @param eventRequest  (optional)
+     * @return [Call]<[Unit]>
+     */
+    @POST("web_event/")
+    fun event(@Body eventRequest: EventRequest? = null): Call<Unit>
 }
