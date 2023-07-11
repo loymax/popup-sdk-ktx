@@ -29,14 +29,14 @@ open class MainFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_main, container, false)
         setViewContent(view)
-        return view;
+        return view
     }
 
     protected open fun setViewContent(view: View) {
         val popup = view.findViewById<TextView>(R.id.pop_up_content)
-        viewModel.popUpContext.observe(this.viewLifecycleOwner, Observer {
+        viewModel.popUpContext.observe(this.viewLifecycleOwner) {
             popup.text = it
-        })
+        }
 
         view.findViewById<Button>(R.id.pop_up_button).apply {
             this.setOnClickListener {
@@ -45,9 +45,9 @@ open class MainFragment : Fragment() {
         }
 
         val popupConfirm = view.findViewById<TextView>(R.id.pop_up_confirm)
-        viewModel.popUpConfirm.observe(this.viewLifecycleOwner, Observer {
+        viewModel.popUpConfirm.observe(this.viewLifecycleOwner) {
             popupConfirm.text = it
-        })
+        }
         view.findViewById<Button>(R.id.confirm_button).apply {
             this.setOnClickListener {
                 viewModel.popUpConfirm()

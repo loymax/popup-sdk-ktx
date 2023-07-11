@@ -23,9 +23,24 @@ class MainViewModel : ViewModel() {
             .also {
                 it.addInterceptor (HttpBearerAuth("Bearer","eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9hcGkubG95bWF4c2MubmV0XC90b2tlbiIsImlhdCI6MTY4NTQzNDkyMCwiZXhwIjoxNjg1NDM4NTIwLCJuYmYiOjE2ODU0MzQ5MjAsImp0aSI6Ims5aklQeE90cjJaNHptZjUiLCJzdWIiOjcwOCwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.jXWafOzx4fcTgb1-fP3Odmkjh3W3jziR8XrlqpvAW4M"))
                 it.addInterceptor(HttpLoggingInterceptor()
-                        .apply { level = HttpLoggingInterceptor.Level.BODY }
-                    )
+                    .apply { level = HttpLoggingInterceptor.Level.BODY }
+                )
             })
+
+    init {
+        val okHttpClient = OkHttpClient()
+            .newBuilder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .also {
+                it.addInterceptor (HttpBearerAuth("Bearer","eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9hcGkubG95bWF4c2MubmV0XC90b2tlbiIsImlhdCI6MTY4NTQzNDkyMCwiZXhwIjoxNjg1NDM4NTIwLCJuYmYiOjE2ODU0MzQ5MjAsImp0aSI6Ims5aklQeE90cjJaNHptZjUiLCJzdWIiOjcwOCwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.jXWafOzx4fcTgb1-fP3Odmkjh3W3jziR8XrlqpvAW4M"))
+                it.addInterceptor(HttpLoggingInterceptor()
+                    .apply { level = HttpLoggingInterceptor.Level.BODY }
+                )
+            }
+        _popUpService.
+    }
 
     private var _popUp: List<PopupResponse>? = null
 
