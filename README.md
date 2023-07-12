@@ -2,13 +2,14 @@
 
 ## Requires
 
-* Kotlin 1.6.10
-* Gradle 7.5
+* Kotlin 1.8.10
+* Gradle 8
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *PopupApi* | [**confirm**](docs/PopupApi.md#confirm) | **POST** popup/confirm | Confirm action popup
 *PopupApi* | [**popup**](docs/PopupApi.md#popup) | **POST** popup/ | Find popup by client_id
+*PopupApi* | [**event**](docs/PopupApi.md#event) | **POST** web_event/ | send event
 
 ## How to use
 * add settings.gradle
@@ -24,19 +25,24 @@ Class | Method | HTTP request | Description
 * add libs to build.gradle
   ```kotlin
   implementation "com.squareup.retrofit2:retrofit:2.9.0"
-  implementation 'com.github.loymax:popup-sdk-ktx:1.0.5'
+  implementation "com.github.loymax:popup-sdk-ktx:1.0.7"
+  implementation "com.squareup.moshi:moshi-adapters:1.13.0"
  
-* set base url
+* initialize client and service 
   ```kotlin
-  private var _popUpService: PopUpService = PopUpService(_baseUrl, httpClient)
+  val okHttpClient = OkHttpClient().newBuilder()
+  _loymaxClient = ApiClient(_baseUrl, okHttpClient)
+  _loymaxClient.addAuthorization("Authorization", HttpBearerAuth("Bearer", "token"))     _loymaxClient.setBearerToken("updatedToken")
+  _popUpService = PopUpService(_loymaxClient)
   
 p.s
 You can also add httpclient.builder to PopUpService with baseUrl
 
-* getPopUp and viewPopUp
+* popup, popupConfirm and event
   ```kotlin
-  val result = _popUpService.popUp(clientId, action, reference)
-  val result = _popUpService.popupConfirm(ConfirmRequest())
+  val result = _popUpService.popup(clientId, action, reference)
+  val result = _popUpService.popupConfirm(ConfirmRequest)
+  val result = _popUpService.event(EventRequest)
   
 For more information, you can view our project PopUpSDKSample
     

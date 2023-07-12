@@ -34,8 +34,8 @@ class MainViewModel : ViewModel() {
             }
 
         _loymaxClient = ApiClient(_baseUrl, okHttpClient)
-        _loymaxClient.addAuthorization("Authorization", HttpBearerAuth("Bearer",""))
-        _loymaxClient.setBearerToken("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9hcGkubG95bWF4c2MubmV0XC90b2tlbiIsImlhdCI6MTY4OTA4OTA1OSwiZXhwIjoxNjg5MDkyNjU5LCJuYmYiOjE2ODkwODkwNTksImp0aSI6ImlTbVFtenNvODJZb042MXAiLCJzdWIiOjcwOCwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.klvt81k61o32o-j6kg-Zgf3yqxBEK5c1zD6zEcrW-_0")
+        _loymaxClient.addAuthorization("Authorization", HttpBearerAuth("Bearer", ""))
+        _loymaxClient.setBearerToken("")
         _popUpService = PopUpService(_loymaxClient)
     }
 
@@ -101,10 +101,20 @@ class MainViewModel : ViewModel() {
     }
 
     private fun getConfirmModel(): ConfirmRequest {
-        return ConfirmRequest(123, "123", 123)
+        return ConfirmRequest(
+            popupId = 123,
+            clientId = "123",
+            sourceId = 123)
     }
 
     private fun getEvent(): EventRequest {
-        return EventRequest("")
+        return EventRequest(
+            clientId = "123",
+            sourceId = "",
+            sessionId = "",
+            date = "",
+            name = "",
+            container = ""
+        )
     }
 }
