@@ -6,10 +6,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
-import androidx.lifecycle.Observer
+import androidx.databinding.DataBindingUtil
 import com.example.popupsdksample.R
+import com.example.popupsdksample.databinding.FragmentMainBinding
 
 open class MainFragment : Fragment() {
     companion object {
@@ -17,6 +16,7 @@ open class MainFragment : Fragment() {
     }
 
     private lateinit var viewModel: MainViewModel
+    private lateinit var binding: FragmentMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,30 +27,45 @@ open class MainFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val view = inflater.inflate(R.layout.fragment_main, container, false)
-        setViewContent(view)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
+        binding.lifecycleOwner = this
+        binding.mainViewModel = viewModel
+
+        val view = binding.root
+
+        setViewContent()
         return view
     }
 
-    protected open fun setViewContent(view: View) {
-        val popup = view.findViewById<TextView>(R.id.pop_up_content)
-        viewModel.popUpContext.observe(this.viewLifecycleOwner) {
-            popup.text = it
+    protected open fun setViewContent() {
+        viewModel.popUpContextLive.observe(this.viewLifecycleOwner) {
+            binding.getPopUpBody.text = it
         }
 
-        view.findViewById<Button>(R.id.pop_up_button).apply {
+        binding.getPopUpButton.apply {
             this.setOnClickListener {
                 viewModel.getPopUp(	"10452636", "app_open","")
             }
         }
 
-        val popupConfirm = view.findViewById<TextView>(R.id.pop_up_confirm)
-        viewModel.popUpConfirm.observe(this.viewLifecycleOwner) {
-            popupConfirm.text = it
+        viewModel.popUpConfirmLive.observe(this.viewLifecycleOwner) {
+            binding.popUpConfirm.text = it
         }
-        view.findViewById<Button>(R.id.confirm_button).apply {
+
+        binding.confirmButton.apply {
             this.setOnClickListener {
                 viewModel.popUpConfirm()
+            }
+        }
+
+
+        viewModel.sendEventLive.observe(this.viewLifecycleOwner) {
+            binding.popUpEventResult.text = it
+        }
+
+        binding.sendEventButton.apply {
+            this.setOnClickListener {
+                viewModel.sendEvent()
             }
         }
     }

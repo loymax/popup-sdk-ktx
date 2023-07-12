@@ -6,8 +6,6 @@ import loymax.popup.sdk.models.ConfirmRequest
 import loymax.popup.sdk.models.EventRequest
 import loymax.popup.sdk.models.PopupRequest
 import loymax.popup.sdk.models.PopupResponse
-import okhttp3.OkHttpClient
-import java.util.concurrent.TimeUnit
 
 open class PopUpService(private val loymaxClient: ApiClient): IPopUpService {
     private val popupApi: PopupApi = loymaxClient.createService(PopupApi::class.java)

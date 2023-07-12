@@ -18,38 +18,39 @@ package loymax.popup.sdk.models
 import com.squareup.moshi.Json
 
 /**
- * 
- *
- * @param clientId - идентификатор клиента в ПЛ;
- * @param sourceId – идентификатор источника событий, не обязательный (например, когда у Партнера несколько мобильных приложений).
- * @param sessionId 
- * @param date 
- * @param name Name of a web event. If passed \"user_login\" or \"user_visit\" also writes a session
- * @param categoryId 
- * @param productId 
- * @param quantity 
- * @param price 
- * @param container 
+ * @param clientId - Идентификатор клиента
+ * @param sourceId – Идентификатор источника событий (Запросить у SmC).
+ * @param sessionId - Идентификатор сессии
+ * @param date - Дата и время события
+ * @param name - Name of a web event. If passed \"user_login\" or \"user_visit\" also writes a session
+ * @param container - Название контейнера, не может быть пустым "webcart","like_products", "personal_offers"
+ * @param categoryId - Идентификатор категории товара
+ * @param productId - Идентификатор товар
+ * @param quantity - Количество
+ * @param price - Стоимость
  */
 
 data class EventRequest (
 
     /*  */
     @Json(name = "client_id")
-    val clientId: kotlin.String? = null,
+    val clientId: kotlin.String,
 
     @Json(name = "source_id")
-    val sourceId: kotlin.String? = null,
+    val sourceId: kotlin.String,
 
     @Json(name = "session_id")
-    val sessionId: kotlin.String? = null,
+    val sessionId: kotlin.String,
 
     @Json(name = "date")
-    val date: kotlin.String? = null,
+    val date: kotlin.String,
 
     /* Name of a web event. If passed \"user_login\" or \"user_visit\" also writes a session */
     @Json(name = "name")
-    val name: kotlin.String? = null,
+    val name: kotlin.String,
+
+    @Json(name = "container")
+    val container: kotlin.String,
 
     @Json(name = "category_id")
     val categoryId: kotlin.String? = null,
@@ -61,9 +62,6 @@ data class EventRequest (
     val quantity: java.math.BigDecimal? = null,
 
     @Json(name = "price")
-    val price: java.math.BigDecimal? = null,
-
-    @Json(name = "container")
-    val container: kotlin.String? = null
+    val price: java.math.BigDecimal? = null
 )
 
