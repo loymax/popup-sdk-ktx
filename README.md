@@ -32,7 +32,8 @@ Class | Method | HTTP request | Description
   ```kotlin
   val okHttpClient = OkHttpClient().newBuilder()
   _loymaxClient = ApiClient(_baseUrl, okHttpClient)
-  _loymaxClient.addAuthorization("Authorization", HttpBearerAuth("Bearer", "token"))     _loymaxClient.setBearerToken("updatedToken")
+  _loymaxClient.addAuthorization("Authorization", HttpBearerAuth("Bearer", "token"))
+  _loymaxClient.setBearerToken("updatedToken")
   _popUpService = PopUpService(_loymaxClient)
   
 p.s
