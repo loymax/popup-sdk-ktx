@@ -18,13 +18,13 @@ package loymax.popup.sdk.models
 import com.squareup.moshi.Json
 
 /**
+ * 
  *
- *
- * @param `data`
+ * @param attributes 
  */
 
-data class EventRequest (
+data class EventRequestData (
 
-    @Json(name = "data")
-    val `data`: EventRequestData? = null
+    @Json(name = "attributes")
+    val attributes: EventRequestDataAttributes? = null
 )
