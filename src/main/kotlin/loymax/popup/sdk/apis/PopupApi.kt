@@ -42,8 +42,8 @@ interface PopupApi {
      *  - 200: Web event has been successfully put into queue
      *
      * @param eventRequest  (optional)
-     * @return [Call]<[Unit]>
+     * @return [Call]<[EventResponse]>
      */
     @POST("web_event/")
-    fun event(@Body eventRequest: EventRequest? = null): Call<Unit>
+    fun event(@Body eventRequest: EventRequest? = null): Call<EventResponse>
 }

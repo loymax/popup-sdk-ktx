@@ -4,6 +4,7 @@ import loymax.popup.sdk.apis.PopupApi
 import loymax.popup.sdk.infrastructure.ApiClient
 import loymax.popup.sdk.models.ConfirmRequest
 import loymax.popup.sdk.models.EventRequest
+import loymax.popup.sdk.models.EventResponse
 import loymax.popup.sdk.models.PopupRequest
 import loymax.popup.sdk.models.PopupResponse
 
@@ -18,7 +19,7 @@ open class PopUpService(private val loymaxClient: ApiClient): IPopUpService {
         return popupApi.popupConfirm(confirmRequest).execute()
     }
 
-    override fun event(eventRequest: EventRequest): retrofit2.Response<Unit> {
+    override fun event(eventRequest: EventRequest): retrofit2.Response<EventResponse> {
         return popupApi.event(eventRequest).execute()
     }
 }

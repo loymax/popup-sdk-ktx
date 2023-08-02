@@ -10,6 +10,8 @@ import loymax.popup.sdk.auth.HttpBearerAuth
 import loymax.popup.sdk.infrastructure.ApiClient
 import loymax.popup.sdk.models.ConfirmRequest
 import loymax.popup.sdk.models.EventRequest
+import loymax.popup.sdk.models.EventRequestData
+import loymax.popup.sdk.models.EventRequestDataAttributes
 import loymax.popup.sdk.services.PopUpService
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -34,7 +36,13 @@ class MainViewModel : ViewModel() {
             }
 
         _loymaxClient = ApiClient(_baseUrl, okHttpClient)
-        _loymaxClient.addAuthorization("Authorization", HttpBearerAuth("Bearer", ""))
+        _loymaxClient.addAuthorization(
+            "Authorization",
+            HttpBearerAuth(
+                "Bearer",
+                ""
+            )
+        )
         _loymaxClient.setBearerToken("")
         _popUpService = PopUpService(_loymaxClient)
     }
@@ -104,17 +112,19 @@ class MainViewModel : ViewModel() {
         return ConfirmRequest(
             popupId = 123,
             clientId = "123",
-            sourceId = 123)
+            sourceId = 123
+        )
     }
 
     private fun getEvent(): EventRequest {
         return EventRequest(
-            clientId = "123",
-            sourceId = "",
-            sessionId = "",
-            date = "",
-            name = "",
-            container = ""
+            data = EventRequestData(
+                attributes = EventRequestDataAttributes(
+                    clientId = "123",
+                    date = "",
+                    name = "",
+                )
+            ),
         )
     }
 }
