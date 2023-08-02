@@ -25,7 +25,7 @@ Class | Method | HTTP request | Description
 * add libs to build.gradle
   ```kotlin
   implementation "com.squareup.retrofit2:retrofit:2.9.0"
-  implementation "com.github.loymax:popup-sdk-ktx:1.0.7"
+  implementation "com.github.loymax:popup-sdk-ktx:1.0.9"
   implementation "com.squareup.moshi:moshi-adapters:1.13.0"
  
 * initialize client and service 
