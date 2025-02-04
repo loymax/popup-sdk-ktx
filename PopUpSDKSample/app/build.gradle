@@ -1,3 +1,10 @@
+buildscript {
+    dependencies {
+        classpath("com.google.gms:google-services:4.4.0")
+        classpath("com.google.firebase:firebase-crashlytics-gradle:2.9.9")
+    }
+}
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -36,7 +43,6 @@ android {
 }
 
 dependencies {
-
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
@@ -49,7 +55,13 @@ dependencies {
     implementation "com.squareup.okhttp3:logging-interceptor:4.10.0"
 
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
-    implementation 'com.github.loymax:popup-sdk-ktx:1.0.8-alpha2'
-
+    implementation "com.squareup.retrofit2:converter-moshi:2.9.0"
     implementation "com.squareup.moshi:moshi-adapters:1.13.0"
+//    implementation 'com.github.loymax:popup-sdk-ktx:1.0.8-alpha2'
+    implementation "com.squareup.moshi:moshi-kotlin:1.13.0"
+    implementation platform("com.google.firebase:firebase-bom:32.3.1")
+    implementation "com.google.firebase:firebase-messaging"
+
+    implementation files('libs/SDK-1.0.9.111-main.jar')
 }
+apply plugin: 'com.google.gms.google-services'

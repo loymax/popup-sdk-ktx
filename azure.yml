@@ -1,0 +1,35 @@
+variables:
+- group: 'MobileBuild'
+- name: version
+  value: 1.0.9
+- name: buildCounter
+  value: $[counter(variables['version'], 100)]
+- name: imgName
+  value: '$(repository)/gradle_w_android_sdk_loymax:0.0.2'
+- name: groupIdRegistry
+  value: SMC
+- name: artifactIdRegistry
+  value: SDK
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: Loymax/Loymax.CICD
+      ref: refs/heads/master
+
+stages:
+- stage: Build
+  dependsOn: []
+  displayName: 'SMC MobileSDK Kotlin Build'
+  jobs:
+    - job: SDK_Kotlin
+      timeoutInMinutes: 5
+      pool:
+        name: Android-Linux
+      workspace:
+        clean: all
+      steps:
+        - checkout: none
+        - template: Pipelines/Common/common.yml@templates
+        - template: templates/gradleBuild.yml
