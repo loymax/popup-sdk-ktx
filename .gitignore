@@ -96,6 +96,7 @@ release/
 # Gradle files
 .gradle/
 libtd/build/
+build/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -159,3 +160,4 @@ lint/tmp/
 .idea/misc.xml
 .idea/gradle.xml
 .idea/compiler.xml
+google-services.json

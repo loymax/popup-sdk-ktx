@@ -26,7 +26,7 @@ class ApiClient(
     private val retrofitBuilder: Retrofit.Builder by lazy {
         Retrofit.Builder()
             .baseUrl(baseUrl)
-            .addConverterFactory(ScalarsConverterFactory.create())
+//            .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(MoshiConverterFactory.create(serializerBuilder.build()))
             .apply {
                 if (converterFactory != null) {
