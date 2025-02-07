@@ -1,5 +1,9 @@
 package loymax.smartcom.sdk.infrastructure
 
+import com.google.gson.GsonBuilder
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonReader
+import com.squareup.moshi.JsonWriter
 import loymax.smartcom.sdk.auth.HttpBearerAuth
 import okhttp3.*
 import retrofit2.Retrofit
@@ -8,7 +12,7 @@ import retrofit2.Converter
 import retrofit2.CallAdapter
 import retrofit2.converter.moshi.MoshiConverterFactory
 import com.squareup.moshi.Moshi
-
+import retrofit2.converter.gson.GsonConverterFactory
 class ApiClient(
     private var baseUrl: String = defaultBasePath,
     private val okHttpClientBuilder: OkHttpClient.Builder? = null,
@@ -16,7 +20,9 @@ class ApiClient(
     private val callFactory: Call.Factory? = null,
     private val callAdapterFactories: List<CallAdapter.Factory> = listOf(),
     private val converterFactories: List<Converter.Factory> = listOf(
-        MoshiConverterFactory.create(serializerBuilder.build())
+        GsonConverterFactory.create(
+            GsonBuilder().setLenient().create()
+        )
     ),
     private var bearerToken: String? = null
 ) {

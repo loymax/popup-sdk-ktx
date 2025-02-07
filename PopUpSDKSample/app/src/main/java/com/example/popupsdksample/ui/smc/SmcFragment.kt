@@ -17,8 +17,15 @@ import com.example.popupsdksample.TokenManager
 import com.example.popupsdksample.databinding.FragmentSmcBinding
 import com.example.popupsdksample.ui.smc.adapters.ViewPagerAdapter
 import kotlinx.coroutines.launch
-import loymax.smartcom.sdk.models.AddContactsRequest
-import loymax.smartcom.sdk.models.UpdateSubscriptionsRequest
+import loymax.smartcom.sdk.models.AddCustomerTokenRequest
+import loymax.smartcom.sdk.models.AddCustomerTokenRequestData
+import loymax.smartcom.sdk.models.AddCustomerTokenRequestDataAttributes
+import loymax.smartcom.sdk.models.AddCustomerTokenRequestDataAttributesContactsInner
+import loymax.smartcom.sdk.models.ModifySubscriptionRequest
+import loymax.smartcom.sdk.models.ModifySubscriptionRequestData
+import loymax.smartcom.sdk.models.ModifySubscriptionRequestDataAttributes
+import loymax.smartcom.sdk.models.ModifySubscriptionRequestDataAttributesCategories
+import loymax.smartcom.sdk.models.ModifySubscriptionRequestDataAttributesCategoriesMailingCode
 
 open class SmcFragment : Fragment() {
     companion object {
@@ -95,32 +102,35 @@ open class SmcFragment : Fragment() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    viewModel.customerChannels.collect { channels ->
+                    viewModel.customerNotificationStatus.collect { channels ->
                         channels?.let {
-                            val dataList = it.data.map { channelData ->
-                                channelData.attributes.type to channelData.attributes.value.toString()
+                            val dataList = it.data?.map { channelData ->
+                                channelData.attributes?.type to channelData.attributes?.value.toString()
                             }
-                            adapter.updateData(0, dataList)
+                            dataList?.let {
+                                adapter.updateData(0, it)
+                            }
+
                         }
                     }
                 }
 
                 launch {
-                    viewModel.customerSubscriptions.collect { subscriptions ->
-                        subscriptions?.let {
-                            val dataList = it.data.map { subscriptionData ->
-                                listOf(
-                                    "Type" to (subscriptionData.type ?: ""),
-                                    "Name" to (subscriptionData.attributes.name ?: ""),
-                                    "Description" to (subscriptionData.attributes.description
-                                        ?: ""),
-                                    "Status SMS" to (subscriptionData.attributes.status_sms ?: ""),
-                                    "Status Push" to (subscriptionData.attributes.status_push
-                                        ?: ""),
-                                    "Status Email" to (subscriptionData.attributes.status_email
-                                        ?: "")
-                                )
+                    viewModel.customerSubscriptionCategories.collect { subscriptions ->
+                        subscriptions?.data?.let { subscriptionList ->
+                            val dataList = subscriptionList.mapNotNull { subscriptionData ->
+                                subscriptionData.attributes?.let { attributes ->
+                                    listOf(
+                                        "Type" to (subscriptionData.type ?: ""),
+                                        "Name" to (attributes.name ?: ""),
+                                        "Description" to (attributes.description ?: ""),
+                                        "Status SMS" to (attributes.statusSms ?: ""),
+                                        "Status Push" to (attributes.statusPush ?: ""),
+                                        "Status Email" to (attributes.statusEmail ?: "")
+                                    )
+                                }
                             }.flatten()
+
                             adapter.updateData(2, dataList)
                         }
                     }
@@ -134,47 +144,35 @@ open class SmcFragment : Fragment() {
             onButtonClick = { position ->
                 when (position) {
                     0 -> TokenManager.getToken()
-                        ?.let { viewModel.getCustomerChannels(viewModel._userId) }
-
+                        ?.let { viewModel.getCustomerNotificationStatus(viewModel._userId) }
                     1 -> toggleUpdateChannelsData()
                     2 -> TokenManager.getToken()
-                        ?.let { viewModel.getCustomerSubscriptions(viewModel._userId) }
+                        ?.let { viewModel.getCustomerSubscriptionCategories(viewModel._userId) }
 
                     3 -> TokenManager.getToken()?.let {
                     }
 
                     4 -> TokenManager.getToken()?.let {
-                        val listAttributes: List<AddContactsRequest.Data.Attributes.Contact> = listOf(
-                            AddContactsRequest.Data.Attributes.Contact(
-                                type = "push",
-                                subtype = "whatsapp",
-                                value = "${TokenManager.getFirebaseToken()}",
-                                device = "android"
-                            )
-                        )
-                        viewModel.addCustomerContacts(
-                            customerId = viewModel._userId,
-                            addContactsRequest = AddContactsRequest(
-                                AddContactsRequest.Data(
-                                    AddContactsRequest.Data.Attributes(
-                                        contacts = listAttributes
-                                    )
-                                )
-                            )
-                        )
+                        sendCustomerToken()
                     }
                 }
             },
             onItemClick = { buttonIndex, itemIndex ->
-                if (buttonIndex == 1) toggleUpdateChannelsData(itemIndex)
-                if (buttonIndex == 3) toggleUpdateSubscriptionsData(itemIndex)
+                when(buttonIndex) {
+                    1 -> {
+                        toggleUpdateChannelsData(itemIndex)
+                    }
+                    3 -> {
+                        toggleUpdateSubscriptionsData(itemIndex)
+                    }
+                }
             },
             onSendButtonClick = {
                 when (it) {
                     1 -> {
-                        viewModel.updateCustomerChannels(
+                        viewModel.setCustomerNotificationStatus(
                             customerId = viewModel._userId,
-                            updateChannelsData = updateChannelsData,
+                            notificationStatusData = updateChannelsData,
                         )
                         println("Send button clicked $updateChannelsData")
                     }
@@ -228,15 +226,47 @@ open class SmcFragment : Fragment() {
     }
 
     private fun sendUpdateSubscriptionsRequest() {
-        val updateRequest = UpdateSubscriptionsRequest(
-            data = UpdateSubscriptionsRequest.Data(
-                attributes = UpdateSubscriptionsRequest.Data.Attributes(
-                    categories = updateSubscriptionsData
+        val updateRequest = ModifySubscriptionRequest(
+            data = ModifySubscriptionRequestData(
+                attributes = ModifySubscriptionRequestDataAttributes(
+                    categories = ModifySubscriptionRequestDataAttributesCategories(
+                        mailingCode = ModifySubscriptionRequestDataAttributesCategoriesMailingCode(
+                            email = updateSubscriptionsData["mailingCode"]?.get("email") ?: "N",
+                            sms = updateSubscriptionsData["mailingCode"]?.get("sms") ?: "N",
+                            push = updateSubscriptionsData["mailingCode"]?.get("push") ?: "N",
+                            messengerColonTelegram = updateSubscriptionsData["mailingCode"]?.get("messenger:telegram") ?: "N",
+                            messengerColonWhatsapp = updateSubscriptionsData["mailingCode"]?.get("messenger:whatsapp") ?: "N"
+                        )
+                    )
                 )
             )
         )
+
         TokenManager.getToken()?.let {
-            viewModel.updateCustomerSubscriptions(viewModel._userId, updateRequest)
+            viewModel.modifyCustomerSubscriptionCategories(viewModel._userId, updateRequest)
+        }
+    }
+
+    private fun sendCustomerToken() {
+        val listContacts: List<AddCustomerTokenRequestDataAttributesContactsInner> = listOf(
+            AddCustomerTokenRequestDataAttributesContactsInner(
+                type = "push",
+                subtype = "whatsapp",
+                value = TokenManager.getFirebaseToken(),
+                device = "android"
+            )
+        )
+
+        val request = AddCustomerTokenRequest(
+            data = AddCustomerTokenRequestData(
+                attributes = AddCustomerTokenRequestDataAttributes(
+                    contacts = listContacts
+                )
+            )
+        )
+
+        TokenManager.getToken()?.let {
+            viewModel.addCustomerToken(viewModel._userId, request)
         }
     }
 }

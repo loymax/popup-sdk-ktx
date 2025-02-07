@@ -16,10 +16,10 @@ import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import loymax.smartcom.sdk.apis.SMCClient
-import loymax.smartcom.sdk.apis.SMCClientFactory
-import loymax.smartcom.sdk.models.PushEvent
-import loymax.smartcom.sdk.models.PushEventRequest
+import loymax.smartcom.sdk.apis.CommunicationApi
+import loymax.smartcom.sdk.infrastructure.ApiClient
+import loymax.smartcom.sdk.models.LogPushEventRequest
+import loymax.smartcom.sdk.models.LogPushEventRequestDataInner
 
 class FirebaseMessagingService : FirebaseMessagingService() {
 
@@ -31,7 +31,7 @@ class FirebaseMessagingService : FirebaseMessagingService() {
         Log.d("FCM", "Message data: ${remoteMessage.data}")
 
         val messageId = remoteMessage.data["message_id"]
-        val clientExternalId = remoteMessage.data["client_external_id"] // исправлено
+        val clientExternalId = remoteMessage.data["client_external_id"]
         val title = remoteMessage.data["title"] ?: remoteMessage.notification?.title ?: "New Message"
         val body = remoteMessage.data["body"] ?: remoteMessage.notification?.body ?: ""
 
@@ -39,7 +39,7 @@ class FirebaseMessagingService : FirebaseMessagingService() {
         Log.d("FCM", "clientExternalId: $clientExternalId")
 
         if (!messageId.isNullOrEmpty() && !clientExternalId.isNullOrEmpty()) {
-            Log.d("FCM", "✅ sendPushEvent(\"Delivered\", $messageId, $clientExternalId) is being called!") // 🔥 Лог перед отправкой
+            Log.d("FCM", "✅ sendPushEvent(\"Delivered\", $messageId, $clientExternalId) is being called!")
             sendPushEvent("Delivered", messageId, clientExternalId)
         } else {
             Log.e("FCM", "❌ Missing required data fields (message_id, client_external_id)")
@@ -55,7 +55,6 @@ class FirebaseMessagingService : FirebaseMessagingService() {
         TokenManager.saveFirebaseToken(token)
     }
 
-    // ✅ ВЕРНУЛ `getFireBaseToken()`
     fun getFireBaseToken() {
         FirebaseMessaging.getInstance().token
             .addOnCompleteListener { task ->
@@ -72,25 +71,32 @@ class FirebaseMessagingService : FirebaseMessagingService() {
     private fun sendPushEvent(type: String, messageId: String, clientExternalId: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val token = TokenManager.getToken()
-                if (token == null) {
-                    Log.e("FCM", "❌ TokenManager.getToken() returned null!")
+                val token = TokenManager.getToken() ?: ""
+                if (token.isEmpty()) {
+                    Log.e("FCM", "❌ TokenManager.getToken() returned null or empty!")
                     return@launch
                 }
 
-                val requestBody = PushEventRequest(
+                val apiClient = ApiClient(
+                    baseUrl = TokenManager.getBaseUrl(),
+                    bearerToken = token
+                )
+
+                val communicationApi = apiClient.createService(CommunicationApi::class.java)
+
+                val requestBody = LogPushEventRequest(
                     data = listOf(
-                        PushEvent(
+                        LogPushEventRequestDataInner(
                             type = type,
                             messageId = messageId,
-                            externalClientId = clientExternalId // исправлено
+                            externalClientId = clientExternalId
                         )
                     )
                 )
 
                 Log.d("FCM", "🚀 Sending push event: $type for messageId=$messageId, clientExternalId=$clientExternalId")
 
-                val response = SMCClientFactory.get().service.sendPushEvent(token, requestBody).execute()
+                val response = communicationApi.logPushEvent(type, requestBody).execute()
 
                 if (response.isSuccessful) {
                     Log.d("FCM", "✅ Push event sent successfully: $type for $messageId")
@@ -131,7 +137,7 @@ class FirebaseMessagingService : FirebaseMessagingService() {
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
-            .setContentIntent(pendingIntent) // 🔥 Клик должен передавать `intent`
+            .setContentIntent(pendingIntent)
             .build()
 
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)

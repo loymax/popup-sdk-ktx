@@ -8,34 +8,11 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.4.0'
+        classpath 'com.google.gms:google-services:4.3.15'
     }
 }
 
-plugins {
-    id 'maven-publish'
-}
-
-group 'org.openapitools'
-
-wrapper {
-    gradleVersion = '7.5'
-    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
-
-
 apply plugin: 'kotlin'
-
-
-
-def versionEnv = System.getenv("VERSION")
-
-if (versionEnv == null || versionEnv.isEmpty()) {
-    version = "1.0.0.0"
-}
-else {
-	version = versionEnv
-}
 
 repositories {
     maven { url "https://repo1.maven.org/maven2" }
@@ -51,27 +28,9 @@ dependencies {
     implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
     implementation "com.squareup.retrofit2:converter-moshi:$retrofitVersion"
     implementation "com.squareup.retrofit2:converter-scalars:$retrofitVersion"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
     implementation platform("com.google.firebase:firebase-bom:32.3.1")
     implementation "com.google.firebase:firebase-messaging"
     testImplementation "io.kotlintest:kotlintest-runner-junit5:3.4.2"
 }
 
-publishing {
-    repositories {
-        maven {
-            url = System.getenv("NEXUS_MAVEN_URL")
-            credentials {
-                username = System.getenv("NEXUS_USER")
-                password = System.getenv("NEXUS_PASSWORD")
-            }
-        }
-    }
-    publications {
-        mavenJava(MavenPublication) {
-			groupId = System.getenv("GROUP_ID_REGISTRY")
-			artifactId = System.getenv("ARTIFACT_ID_REGISTRY")
-			version = version
-            from components.java
-        }
-    }
-}

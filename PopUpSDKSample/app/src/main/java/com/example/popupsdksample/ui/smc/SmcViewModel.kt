@@ -4,202 +4,231 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import loymax.smartcom.sdk.apis.SMCClient
-import loymax.smartcom.sdk.models.AuthRequest
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.example.popupsdksample.TokenManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import loymax.smartcom.sdk.apis.SMCClientFactory
-import loymax.smartcom.sdk.models.AddContactsRequest
-import loymax.smartcom.sdk.models.AddContactsResponse
-import loymax.smartcom.sdk.models.CustomerChannelsResponse
-import loymax.smartcom.sdk.models.CustomerSubscriptionsResponse
-import loymax.smartcom.sdk.models.UpdateChannelRequest
-import loymax.smartcom.sdk.models.UpdateChannelResponse
-import loymax.smartcom.sdk.models.UpdateResponse
-import loymax.smartcom.sdk.models.UpdateSubscriptionsRequest
+import loymax.smartcom.sdk.apis.AuthorizationApi
+import loymax.smartcom.sdk.apis.CommunicationApi
+import loymax.smartcom.sdk.apis.CustomerApi
+import loymax.smartcom.sdk.infrastructure.ApiClient
+import loymax.smartcom.sdk.models.AddCustomerTokenRequest
+import loymax.smartcom.sdk.models.GetAuthTokenRequest
+import loymax.smartcom.sdk.models.GetAuthTokenRequestData
+import loymax.smartcom.sdk.models.GetAuthTokenRequestDataAttributes
+import loymax.smartcom.sdk.models.GetCustomerNotificationStatus200Response
+import loymax.smartcom.sdk.models.GetCustomerSubscriptionCategories200Response
+import loymax.smartcom.sdk.models.ModifySubscriptionRequest
+import loymax.smartcom.sdk.models.ModifySubscriptionRequestData
+import loymax.smartcom.sdk.models.ModifySubscriptionRequestDataAttributes
+import loymax.smartcom.sdk.models.ModifySubscriptionRequestDataAttributesCategories
+import loymax.smartcom.sdk.models.ModifySubscriptionRequestDataAttributesCategoriesMailingCode
+import loymax.smartcom.sdk.models.SMCSuccessResponse
+import loymax.smartcom.sdk.models.SetCustomerNotificationStatusRequest
+import loymax.smartcom.sdk.models.SetCustomerNotificationStatusRequestData
+import loymax.smartcom.sdk.models.SetCustomerNotificationStatusRequestDataAttributes
 
 
 class SmcViewModel(application: Application) : AndroidViewModel(application) {
-    val _baseUrl = MutableStateFlow("https://smcmaster-api.smc.nsk-k8s.loymax.net/")
+    //    "username": "info@kuzprof.ru",
+    //    "password": "bookean"
+    private val tokenManager = TokenManager
+
+    val _baseUrl = MutableStateFlow(TokenManager.getBaseUrl())
     val baseUrl: StateFlow<String> = _baseUrl
-    private var apiClient: SMCClient = SMCClientFactory.create(_baseUrl.value)
 
     var _userName: String = ""
     var _password: String = ""
     var _userId: String = ""
-    private val tokenManager = TokenManager
-//    "username": "info@kuzprof.ru",
-//    "password": "bookean"
 
-    private val _customerChannels = MutableStateFlow<CustomerChannelsResponse?>(null)
-    val customerChannels: StateFlow<CustomerChannelsResponse?> = _customerChannels
+    private var apiClient: ApiClient = createApiClient()
 
-    private val _updateChannelsResponse = MutableStateFlow<UpdateChannelResponse?>(null)
-    val updateChannelsResponse: StateFlow<UpdateChannelResponse?> = _updateChannelsResponse
-
-    private val _customerSubscriptions = MutableStateFlow<CustomerSubscriptionsResponse?>(null)
-    val customerSubscriptions: StateFlow<CustomerSubscriptionsResponse?> = _customerSubscriptions
-
-    private val _updateSubscriptionsResponse = MutableStateFlow<UpdateResponse?>(null)
-    val updateSubscriptionsResponse: StateFlow<UpdateResponse?> = _updateSubscriptionsResponse
-
-    private val _addContactsResponse = MutableStateFlow<AddContactsResponse?>(null)
-    val addContactsResponse: StateFlow<AddContactsResponse?> = _addContactsResponse
-
-//    val apiClient = SMCClientFactory.get()
+    private fun createApiClient(): ApiClient {
+        val token = tokenManager.getToken() ?: ""
+        return ApiClient(
+            baseUrl = TokenManager.getBaseUrl(),
+            bearerToken = token
+        )
+    }
     fun changeBaseUrl(url: String) {
-        _baseUrl.value = url
-        apiClient = SMCClientFactory.create(url)
+        if (_baseUrl.value != url) {
+            _baseUrl.value = url
+            TokenManager.setBaseUrl(url)
+            apiClient = createApiClient()
+            println("🌍 Base URL changed to: $url")
+        }
     }
 
-    fun authenticateUser(
-        userName: String,
-        password: String,
-    ) {
+    fun authenticateUser(userName: String, password: String) {
         viewModelScope.launch {
             try {
-                val response = withContext(Dispatchers.IO) {
-                    apiClient.service.authenticate(
-                        AuthRequest(
-                            AuthRequest.Data(
-                                AuthRequest.Data.Attributes(
-                                    userName, password
-                                )
+                val token = withContext(Dispatchers.IO) {
+                    val authApi = apiClient.createService(AuthorizationApi::class.java)
+
+                    val requestBody = GetAuthTokenRequest(
+                        data = GetAuthTokenRequestData(
+                            attributes = GetAuthTokenRequestDataAttributes(
+                                username = userName,
+                                password = password
                             )
                         )
-                    ).execute()
+                    )
+
+                    val response = authApi.getAuthToken(requestBody).execute()
+
+                    if (response.isSuccessful) {
+                        response.body()?.data?.attributes?.accessToken
+                    } else {
+                        println("❌ Authentication failed: ${response.errorBody()?.string()}")
+                        null
+                    }
                 }
 
-                if (response.isSuccessful) {
-                    val token = response.body()?.data?.attributes?.access_token
-                    if (token != null) {
-                        tokenManager.saveToken(token)
-                        println("Token saved: $token")
-                        println("Token get: ${getToken()}")
-                    }
+                if (!token.isNullOrEmpty()) {
+                    tokenManager.saveToken(token)
+                    apiClient.setBearerToken(token) // Устанавливаем токен в ApiClient
+                    println("✅ Token saved: $token")
+                    println("🔑 Retrieved token: ${getToken()}")
                 } else {
-                    println("Error: ${response.errorBody()?.string()}")
+                    println("❌ Failed to retrieve token")
                 }
             } catch (e: Exception) {
-                println("Unknown error occurred: ${e.message}")
+                println("❌ Unknown error occurred: ${e.message}")
             }
         }
     }
 
-    fun getCustomerChannels(customerId: String) {
+    private val _customerNotificationStatus = MutableStateFlow<GetCustomerNotificationStatus200Response?>(null)
+    val customerNotificationStatus: StateFlow<GetCustomerNotificationStatus200Response?> = _customerNotificationStatus
+
+    fun getCustomerNotificationStatus(customerId: String) {
         viewModelScope.launch {
             try {
                 val token = tokenManager.getToken() ?: ""
                 val response = withContext(Dispatchers.IO) {
-                    apiClient.service.getCustomerChannels(customerId, token).execute()
+                    val apiService = apiClient.createService(CustomerApi::class.java)
+                    apiService.getCustomerNotificationStatus(customerId).execute()
                 }
 
                 if (response.isSuccessful) {
-                    _customerChannels.value = response.body()
+                    _customerNotificationStatus.value = response.body()
+                    println("✅ Notification status received: ${_customerNotificationStatus.value}")
                 } else {
-                    println("Error: ${response.errorBody()?.string()}")
+                    println("❌ Error fetching notification status: ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
-                println("Unknown error: ${e.message}")
+                println("❌ Unknown error fetching notification status: ${e.message}")
             }
         }
     }
 
-    fun updateCustomerChannels(
-        customerId: String,
-        updateChannelsData: MutableList<Pair<String, String>>
-    ) {
-        println("updateCustomerChannels: $updateChannelsData")
-        val emailValue = updateChannelsData.find { it.first == "email" }?.second ?: "N"
-        val smsValue = updateChannelsData.find { it.first == "sms" }?.second ?: "N"
-        val pushValue = updateChannelsData.find { it.first == "push" }?.second ?: "N"
+    private val _customerNotificationStatusResponse = MutableStateFlow<SMCSuccessResponse?>(null)
+    val customerNotificationStatusResponse: StateFlow<SMCSuccessResponse?> = _customerNotificationStatusResponse
 
-        val updateChannelRequest = UpdateChannelRequest(
-            data = UpdateChannelRequest.Data(
-                attributes = UpdateChannelRequest.Data.Attributes(
+    fun setCustomerNotificationStatus(
+        customerId: String,
+        notificationStatusData: MutableList<Pair<String, String>>
+    ) {
+        println("🔄 Updating customer notification status: $notificationStatusData")
+
+        val emailValue = notificationStatusData.find { it.first == "email" }?.second ?: "N"
+        val smsValue = notificationStatusData.find { it.first == "sms" }?.second ?: "N"
+        val pushValue = notificationStatusData.find { it.first == "push" }?.second ?: "N"
+
+        val requestBody = SetCustomerNotificationStatusRequest(
+            data = SetCustomerNotificationStatusRequestData(
+                attributes = SetCustomerNotificationStatusRequestDataAttributes(
                     email = emailValue,
-                    sms = smsValue,
-                    push = pushValue
+                    push = pushValue,
+                    sms = smsValue
                 )
             )
         )
 
         viewModelScope.launch {
             try {
-                val token = tokenManager.getToken() ?: ""
                 val response = withContext(Dispatchers.IO) {
-                    apiClient.service.updateCustomerChannels(customerId, token, updateChannelRequest).execute()
+                    val apiService = apiClient.createService(CustomerApi::class.java)
+                    apiService.setCustomerNotificationStatus(customerId, requestBody).execute()
                 }
 
                 if (response.isSuccessful) {
-                    _updateChannelsResponse.value = response.body()
-                    println("Update successful: $response")
+                    _customerNotificationStatusResponse.value = response.body()
+                    println("✅ Notification status updated: ${_customerNotificationStatusResponse.value}")
                 } else {
-                    println("Error updating channels: ${response.errorBody()?.string()}")
+                    println("❌ Error updating notification status: ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
-                println("Unknown error updating channels: ${e.message}")
+                println("❌ Unknown error updating notification status: ${e.message}")
             }
         }
     }
 
-    fun getCustomerSubscriptions(customerId: String) {
+    private val _customerSubscriptionCategories = MutableStateFlow<GetCustomerSubscriptionCategories200Response?>(null)
+    val customerSubscriptionCategories: StateFlow<GetCustomerSubscriptionCategories200Response?> = _customerSubscriptionCategories
+
+    fun getCustomerSubscriptionCategories(customerId: String) {
         viewModelScope.launch {
             try {
                 val token = tokenManager.getToken() ?: ""
                 val response = withContext(Dispatchers.IO) {
-                    apiClient.service.getCustomerSubscriptions(customerId, token).execute()
+                    val apiService = apiClient.createService(CustomerApi::class.java)
+                    apiService.getCustomerSubscriptionCategories(customerId).execute()
                 }
 
                 if (response.isSuccessful) {
-                    _customerSubscriptions.value = response.body()
-                    println("_customerSubscriptions: ${_customerSubscriptions.value}")
+                    _customerSubscriptionCategories.value = response.body()
+                    println("✅ Subscription categories received: ${_customerSubscriptionCategories.value}")
                 } else {
-                    println("Error fetching subscriptions: ${response.errorBody()?.string()}")
+                    println("❌ Error fetching subscription categories: ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
-                println("Unknown error fetching subscriptions: ${e.message}")
+                println("❌ Unknown error fetching subscription categories: ${e.message}")
             }
         }
     }
 
-    fun updateCustomerSubscriptions(customerId: String, updateSubscriptionsRequest: UpdateSubscriptionsRequest) {
+    private val _modifySubscriptionResponse = MutableStateFlow<SMCSuccessResponse?>(null)
+    val modifySubscriptionResponse: StateFlow<SMCSuccessResponse?> = _modifySubscriptionResponse
+
+    fun modifyCustomerSubscriptionCategories(customerId: String, modifySubscriptionRequest: ModifySubscriptionRequest) {
         viewModelScope.launch {
             try {
                 val token = tokenManager.getToken() ?: ""
                 val response = withContext(Dispatchers.IO) {
-                    apiClient.service.updateCustomerSubscriptions(customerId, token, updateSubscriptionsRequest).execute()
+                    val apiService = apiClient.createService(CustomerApi::class.java)
+                    apiService.modifyCustomerSubscriptionCategories(customerId, modifySubscriptionRequest).execute()
                 }
 
                 if (response.isSuccessful) {
-                    _updateSubscriptionsResponse.value = response.body()
+                    _modifySubscriptionResponse.value = response.body()
+                    println("✅ Subscription categories updated: ${_modifySubscriptionResponse.value}")
                 } else {
-                    println("Error updating subscriptions: ${response.errorBody()?.string()}")
+                    println("❌ Error updating subscription categories: ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
-                println("Unknown error updating subscriptions: ${e.message}")
+                println("❌ Unknown error updating subscription categories: ${e.message}")
             }
         }
     }
 
-    fun addCustomerContacts(customerId: String, addContactsRequest: AddContactsRequest) {
+    fun addCustomerToken(customerId: String, addCustomerTokenRequest: AddCustomerTokenRequest) {
         viewModelScope.launch {
             try {
                 val token = tokenManager.getToken() ?: ""
                 val response = withContext(Dispatchers.IO) {
-                    apiClient.service.addCustomerContacts(customerId, token, addContactsRequest).execute()
+                    val apiService = apiClient.createService(CustomerApi::class.java)
+                    apiService.addCustomerToken(customerId, addCustomerTokenRequest).execute()
                 }
 
                 if (response.isSuccessful) {
-                    _addContactsResponse.value = response.body()
+                    println("✅ Customer token successfully added!")
                 } else {
-                    println("Error adding contacts: ${response.errorBody()?.string()}")
+                    println("❌ Error adding customer token: ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
-                println("Unknown error adding contacts: ${e.message}")
+                println("❌ Unknown error adding customer token: ${e.message}")
             }
         }
     }

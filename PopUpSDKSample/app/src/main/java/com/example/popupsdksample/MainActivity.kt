@@ -17,10 +17,10 @@ import com.google.firebase.FirebaseApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import loymax.smartcom.sdk.apis.SMCClient
-import loymax.smartcom.sdk.apis.SMCClientFactory
-import loymax.smartcom.sdk.models.PushEvent
-import loymax.smartcom.sdk.models.PushEventRequest
+import loymax.smartcom.sdk.apis.CommunicationApi
+import loymax.smartcom.sdk.infrastructure.ApiClient
+import loymax.smartcom.sdk.models.LogPushEventRequest
+import loymax.smartcom.sdk.models.LogPushEventRequestDataInner
 
 class MainActivity : AppCompatActivity() {
 
@@ -81,9 +81,7 @@ class MainActivity : AppCompatActivity() {
     private fun handlePushIntent(intent: Intent?) {
         val messageId = intent?.getStringExtra("message_id")
         val clientExternalId = intent?.getStringExtra("client_external_id")
-
         Log.d("FCM", "✅ Intent extras received in MainActivity: messageId=$messageId, clientExternalId=$clientExternalId")
-
         if (!messageId.isNullOrEmpty() && !clientExternalId.isNullOrEmpty()) {
             Log.d("FCM", "✅ Push clicked: Sending Read event for messageId=$messageId")
             sendPushEvent("Read", messageId, clientExternalId)
@@ -93,28 +91,35 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendPushEvent(type: String, messageId: String, externalClientId: String) {
+        Log.d("FCM", "Push event sent: $type for $messageId")
+
+        val apiClient = ApiClient(
+            baseUrl = TokenManager.getBaseUrl(),
+            bearerToken = TokenManager.getToken() ?: return
+        )
+
+        val communicationApi = apiClient.createService(CommunicationApi::class.java)
+
+        val requestBody = LogPushEventRequest(
+            data = listOf(
+                LogPushEventRequestDataInner(
+                    type = type,
+                    messageId = messageId,
+                    externalClientId = externalClientId
+                )
+            )
+        )
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val token = TokenManager.getToken() ?: return@launch
-                val requestBody = PushEventRequest(
-                    data = listOf(
-                        PushEvent(
-                            type = type,
-                            messageId = messageId,
-                            externalClientId = externalClientId
-                        )
-                    )
-                )
-
-                val response = SMCClientFactory.get().service.sendPushEvent(token, requestBody).execute()
-
+                val response = communicationApi.logPushEvent(type, requestBody).execute()
                 if (response.isSuccessful) {
-                    Log.d("FCM", "Push event sent: $type for $messageId")
+                    Log.d("FCM", "✅ Push event successfully sent: $type for $messageId")
                 } else {
-                    Log.e("FCM", "Failed to send push event: ${response.errorBody()?.string()}")
+                    Log.e("FCM", "❌ Failed to send push event: ${response.errorBody()?.string()}")
                 }
             } catch (e: Exception) {
-                Log.e("FCM", "Error sending push event: ${e.message}")
+                Log.e("FCM", "❌ Error sending push event: ${e.message}")
             }
         }
     }

@@ -14,6 +14,8 @@ object TokenManager {
     private lateinit var authPrefs: SharedPreferences
     private lateinit var fcmPrefs: SharedPreferences
 
+    private var baseUrl: String = "https://smcmaster-api.smc.nsk-k8s.loymax.net/api/"
+
     /**
      * Инициализация TokenManager (вызывается в Application)
      */
@@ -80,5 +82,10 @@ object TokenManager {
      */
     fun hasFirebaseToken(): Boolean {
         return getFirebaseToken() != null
+    }
+
+    fun getBaseUrl(): String = baseUrl
+    fun setBaseUrl(url: String) {
+        baseUrl = url
     }
 }

@@ -37,8 +37,9 @@ class ViewPagerAdapter(
 
     override fun getItemCount(): Int = buttonLabels.size
 
-    fun updateData(buttonIndex: Int, newData: List<Pair<String, String>>) {
-        dataMap[buttonIndex] = newData.toMutableList()
+    fun updateData(buttonIndex: Int, newData: List<Pair<String?, String>>) {
+        val fixedData = newData.map { (first, second) -> Pair(first ?: "", second) }
+        dataMap[buttonIndex] = fixedData.toMutableList()
         notifyItemChanged(buttonIndex)
     }
 
